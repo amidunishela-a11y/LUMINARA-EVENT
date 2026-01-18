@@ -10,26 +10,19 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        body { background-color: #050505; color: white; margin: 0; font-family: sans-serif; }
+        body { background-color: #050505; color: white; margin: 0; font-family: sans-serif; overflow-x: hidden; }
         .custom-scrollbar::-webkit-scrollbar { width: 3px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(168, 85, 247, 0.2); border-radius: 10px; }
-        @keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        .animate-spin-slow { animation: spin-slow 8s linear infinite; }
     </style>
 </head>
 <body>
     <div id="root"></div>
 
     <script type="text/babel">
-        // React සහ Icons හඳුන්වා දීම
         const { useState, useEffect, useRef } = React;
-        const { 
-            Users, MapPin, Calendar, Clock, Music, Phone, Share2, Sparkles, Play, 
-            Instagram, Facebook, Image, Wand2, Copy, Loader2, Navigation, 
-            Crown, Star, CheckCircle2, Trophy, User, Database, Heart, Diamond 
-        } = lucide;
+        const { Users, MapPin, Sparkles, Play, Loader2, CheckCircle2, Instagram, Facebook, Share2, Crown, Star } = lucide;
 
-        // --- ඔයාගේ SCRIPT URL එක ---
+        // --- ඔයාගේ Google Script URL එක ---
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxxGsT0K7rXSDi8GruA76yrs1IWeCYiv_I0l8cN18KWmMsBZkHyWRrXIHZjzGq4cvlbvg/exec";
 
         const FluidSmokeEffect = () => {
@@ -77,7 +70,6 @@
             const [isVisible, setIsVisible] = useState(false);
             const [attendees, setAttendees] = useState([]);
             const [userNameInput, setUserNameInput] = useState("");
-            const [userPhoneInput, setUserPhoneInput] = useState("");
             const [isVoting, setIsVoting] = useState(false);
             const [hasVoted, setHasVoted] = useState(false);
 
@@ -96,18 +88,18 @@
                     const res = await fetch(SCRIPT_URL);
                     const data = await res.json();
                     setAttendees(data.reverse());
-                } catch (e) { console.log(e); }
+                } catch (e) { console.error(e); }
             };
 
             useEffect(() => { setIsVisible(true); fetchAttendees(); const int = setInterval(fetchAttendees, 5000); return () => clearInterval(int); }, []);
 
             const handleRsvp = async () => {
-                if (!userNameInput.trim() || !userPhoneInput.trim() || isVoting) return;
+                if (!userNameInput.trim() || isVoting) return;
                 setIsVoting(true);
                 try {
-                    await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ name: userNameInput.trim(), phone: userPhoneInput.trim() }) });
-                    setHasVoted(true); setUserNameInput(""); setUserPhoneInput(""); setTimeout(fetchAttendees, 1000);
-                } catch (e) { console.log(e); } finally { setIsVoting(false); }
+                    await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ name: userNameInput.trim() }) });
+                    setHasVoted(true); setUserNameInput(""); setTimeout(fetchAttendees, 1000);
+                } catch (e) { console.error(e); } finally { setIsVoting(false); }
             };
 
             return (
@@ -115,21 +107,20 @@
                     <div className={`relative w-full max-w-[450px] aspect-[4/8.5] rounded-[60px] overflow-hidden shadow-2xl bg-[#070707] border border-white/5 transition-all duration-1000 transform ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
                         <FluidSmokeEffect />
                         <div className="absolute inset-0 p-8 flex flex-col items-center z-10 text-center">
-                            <p className="text-[10px] tracking-[0.6em] text-purple-400 font-bold mb-6 uppercase">{details.schoolName}</p>
+                            <p className="text-[10px] tracking-[0.6em] text-purple-400 font-bold mb-6 uppercase leading-relaxed">{details.schoolName}</p>
                             <h1 className="text-6xl font-black italic text-transparent bg-clip-text bg-gradient-to-b from-white to-purple-800 mb-2">LUMINARA</h1>
-                            <img src={details.logoUrl} className="w-12 h-12 mb-6 opacity-80" />
+                            <img src={details.logoUrl} className="w-12 h-12 mb-6 opacity-80" alt="logo" />
 
                             {!hasVoted ? (
-                                <div className="w-full bg-white/5 backdrop-blur-3xl rounded-[40px] p-6 border border-white/10 mb-6">
+                                <div className="w-full bg-white/5 backdrop-blur-3xl rounded-[40px] p-6 border border-white/10 mb-6 shadow-inner">
                                     <div className="flex items-baseline justify-center gap-2 mb-4">
                                         <span className="text-5xl font-black">{attendees.length}</span>
                                         <span className="text-xs font-bold text-purple-500 uppercase italic">පැමිණේ</span>
                                     </div>
                                     <div className="space-y-3">
-                                        <input className="w-full bg-black/40 border border-white/10 p-3 rounded-2xl text-xs text-center outline-none" placeholder="ඔබේ නම" value={userNameInput} onChange={(e) => setUserNameInput(e.target.value)} />
-                                        <input className="w-full bg-black/40 border border-white/10 p-3 rounded-2xl text-xs text-center outline-none" placeholder="දුරකථන අංකය" value={userPhoneInput} onChange={(e) => setUserPhoneInput(e.target.value)} />
+                                        <input className="w-full bg-black/40 border border-white/10 p-3 rounded-2xl text-xs text-center outline-none focus:border-purple-500" placeholder="ඔබේ නම මෙතැන ලියන්න..." value={userNameInput} onChange={(e) => setUserNameInput(e.target.value)} />
                                         <button onClick={handleRsvp} disabled={isVoting} className="w-full py-4 bg-white text-black rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-purple-500 hover:text-white transition-all flex items-center justify-center gap-2">
-                                            {isVoting ? <Loader2 className="animate-spin" size={14} /> : <CheckCircle2 size={14} />} CONFIRM
+                                            {isVoting ? <Loader2 className="animate-spin" size={14} /> : <CheckCircle2 size={14} />} මමත් එනවා!
                                         </button>
                                     </div>
                                 </div>
@@ -141,24 +132,23 @@
                             )}
 
                             <div className="w-full flex-1 bg-black/40 rounded-[40px] border border-white/5 p-6 overflow-hidden flex flex-col mb-6">
-                                <h4 className="text-[9px] font-black uppercase tracking-widest text-gray-500 mb-4 border-b border-white/10 pb-2">LIVE MATES LIST</h4>
+                                <h4 className="text-[9px] font-black uppercase tracking-widest text-gray-500 mb-4 border-b border-white/10 pb-2">පැමිණෙන අයගේ ලැයිස්තුව</h4>
                                 <div className="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar text-left">
                                     {attendees.map((att, idx) => (
                                         <div key={idx} className="flex items-center gap-3 bg-white/5 p-2 rounded-xl">
                                             <div className="w-6 h-6 rounded-full bg-purple-600 flex items-center justify-center text-[10px] font-bold uppercase">{att.name ? att.name.charAt(0) : '?'}</div>
-                                            <span className="text-[11px] font-bold text-gray-300 truncate">{att.name}</span>
+                                            <span className="text-[11px] font-bold text-gray-200 truncate">{att.name}</span>
                                         </div>
                                     ))}
                                 </div>
                             </div>
-                            <div className="mt-auto w-full pt-4 border-t border-white/5 text-[9px] font-bold opacity-50 uppercase tracking-widest">LUMINARA 2022 O/L</div>
+                            <div className="mt-auto w-full pt-4 border-t border-white/5 text-[9px] font-bold opacity-30 uppercase tracking-[0.5em] italic">LUMINARA 2022 O/L</div>
                         </div>
                     </div>
                 </div>
             );
         };
 
-        // මේ පේළි දෙක තමයි වෙබ් එකේ පෙන්වන්න අතිශය වැදගත් වෙන්නේ
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
