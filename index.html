@@ -21,76 +21,55 @@
     <div id="root"></div>
 
     <script type="text/babel">
+        // React සහ Icons හඳුන්වා දීම
         const { useState, useEffect, useRef } = React;
-
-        // Lucide Icons වෙබ් එකට ගැලපෙන සේ සකස් කිරීම
         const { 
             Users, MapPin, Calendar, Clock, Music, Phone, Share2, Sparkles, Play, 
             Instagram, Facebook, Image, Wand2, Copy, Loader2, Navigation, 
             Crown, Star, CheckCircle2, Trophy, User, Database, Heart, Diamond 
         } = lucide;
 
-        // --- CONFIGURATION ---
+        // --- ඔයාගේ SCRIPT URL එක ---
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxxGsT0K7rXSDi8GruA76yrs1IWeCYiv_I0l8cN18KWmMsBZkHyWRrXIHZjzGq4cvlbvg/exec";
 
         const FluidSmokeEffect = () => {
             const canvasRef = useRef(null);
             const particles = useRef([]);
-
             useEffect(() => {
                 const canvas = canvasRef.current;
                 const ctx = canvas.getContext('2d');
                 let animationFrameId;
-
-                const handleResize = () => {
-                    canvas.width = canvas.offsetWidth;
-                    canvas.height = canvas.offsetHeight;
-                };
-
+                const handleResize = () => { canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight; };
                 const handleMouseMove = (e) => {
                     const rect = canvas.getBoundingClientRect();
                     for (let i = 0; i < 3; i++) {
                         particles.current.push({
-                            x: e.clientX - rect.left,
-                            y: e.clientY - rect.top,
-                            vx: (Math.random() - 0.5) * 2,
-                            vy: (Math.random() - 0.5) * 2 - 1,
-                            alpha: 0.6,
-                            size: Math.random() * 30 + 10,
-                            color: Math.random() > 0.5 ? '168, 85, 247' : '59, 130, 246',
-                            life: 1.0
+                            x: e.clientX - rect.left, y: e.clientY - rect.top,
+                            vx: (Math.random() - 0.5) * 2, vy: (Math.random() - 0.5) * 2 - 1,
+                            alpha: 0.6, size: Math.random() * 30 + 10,
+                            color: Math.random() > 0.5 ? '168, 85, 247' : '59, 130, 246', life: 1.0
                         });
                     }
                 };
-
                 const animate = () => {
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
                     for (let i = 0; i < particles.current.length; i++) {
                         const p = particles.current[i];
-                        p.x += p.vx; p.y += p.vy;
-                        p.alpha -= 0.008; p.life -= 0.01;
+                        p.x += p.vx; p.y += p.vy; p.alpha -= 0.008; p.life -= 0.01;
                         if (p.life <= 0) { particles.current.splice(i, 1); i--; continue; }
                         ctx.beginPath();
                         const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size);
                         gradient.addColorStop(0, `rgba(${p.color}, ${p.alpha})`);
                         gradient.addColorStop(1, `rgba(${p.color}, 0)`);
-                        ctx.fillStyle = gradient;
-                        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-                        ctx.fill();
+                        ctx.fillStyle = gradient; ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fill();
                     }
                     animationFrameId = requestAnimationFrame(animate);
                 };
-
                 window.addEventListener('resize', handleResize);
                 canvas.addEventListener('mousemove', handleMouseMove);
                 handleResize(); animate();
-                return () => {
-                    window.removeEventListener('resize', handleResize);
-                    canvas.removeEventListener('mousemove', handleMouseMove);
-                    cancelAnimationFrame(animationFrameId);
-                };
+                return () => { window.removeEventListener('resize', handleResize); canvas.removeEventListener('mousemove', handleMouseMove); cancelAnimationFrame(animationFrameId); };
             }, []);
-
             return <canvas ref={canvasRef} className="absolute inset-0 z-20 pointer-events-none opacity-60" style={{ mixBlendMode: 'screen' }} />;
         };
 
@@ -105,7 +84,6 @@
             const details = {
                 schoolName: "POLPITHIGAMA NATIONAL COLLEGE",
                 batchYear: "CLASS OF 2022",
-                theme: "LUMINARA",
                 date: "2026 මාර්තු 15",
                 venue: "SKY LOUNGE - COLOMBO",
                 ticketPrice: "රු. 3000/=",
@@ -115,45 +93,31 @@
 
             const fetchAttendees = async () => {
                 try {
-                    const response = await fetch(SCRIPT_URL);
-                    const data = await response.json();
+                    const res = await fetch(SCRIPT_URL);
+                    const data = await res.json();
                     setAttendees(data.reverse());
-                } catch (err) { console.error("Fetch Error:", err); }
+                } catch (e) { console.log(e); }
             };
 
-            useEffect(() => {
-                setIsVisible(true);
-                fetchAttendees();
-                const interval = setInterval(fetchAttendees, 5000);
-                return () => clearInterval(interval);
-            }, []);
+            useEffect(() => { setIsVisible(true); fetchAttendees(); const int = setInterval(fetchAttendees, 5000); return () => clearInterval(int); }, []);
 
             const handleRsvp = async () => {
                 if (!userNameInput.trim() || !userPhoneInput.trim() || isVoting) return;
                 setIsVoting(true);
                 try {
-                    await fetch(SCRIPT_URL, {
-                        method: 'POST',
-                        mode: 'no-cors',
-                        body: JSON.stringify({ name: userNameInput.trim(), phone: userPhoneInput.trim() }),
-                    });
-                    setHasVoted(true);
-                    setUserNameInput("");
-                    setUserPhoneInput("");
-                    setTimeout(fetchAttendees, 1000);
-                } catch (err) { console.error("RSVP Error:", err); }
-                finally { setIsVoting(false); }
+                    await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ name: userNameInput.trim(), phone: userPhoneInput.trim() }) });
+                    setHasVoted(true); setUserNameInput(""); setUserPhoneInput(""); setTimeout(fetchAttendees, 1000);
+                } catch (e) { console.log(e); } finally { setIsVoting(false); }
             };
 
             return (
-                <div className="min-h-screen bg-[#050505] text-white flex flex-col items-center p-4 overflow-x-hidden">
+                <div className="min-h-screen bg-[#050505] text-white flex flex-col items-center p-4">
                     <div className={`relative w-full max-w-[450px] aspect-[4/8.5] rounded-[60px] overflow-hidden shadow-2xl bg-[#070707] border border-white/5 transition-all duration-1000 transform ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
                         <FluidSmokeEffect />
-                        
                         <div className="absolute inset-0 p-8 flex flex-col items-center z-10 text-center">
-                            <p className="text-[10px] tracking-[0.6em] text-purple-400 font-black mb-6 uppercase">{details.schoolName}</p>
-                            <h1 className="text-6xl font-black italic tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white to-purple-800 mb-2">LUMINARA</h1>
-                            <img src={details.logoUrl} className="w-12 h-12 mb-6 opacity-80" alt="Logo" />
+                            <p className="text-[10px] tracking-[0.6em] text-purple-400 font-bold mb-6 uppercase">{details.schoolName}</p>
+                            <h1 className="text-6xl font-black italic text-transparent bg-clip-text bg-gradient-to-b from-white to-purple-800 mb-2">LUMINARA</h1>
+                            <img src={details.logoUrl} className="w-12 h-12 mb-6 opacity-80" />
 
                             {!hasVoted ? (
                                 <div className="w-full bg-white/5 backdrop-blur-3xl rounded-[40px] p-6 border border-white/10 mb-6">
@@ -162,15 +126,15 @@
                                         <span className="text-xs font-bold text-purple-500 uppercase italic">පැමිණේ</span>
                                     </div>
                                     <div className="space-y-3">
-                                        <input className="w-full bg-black/40 border border-white/10 p-3 rounded-2xl text-xs text-center outline-none focus:border-purple-500" placeholder="ENTER NAME" value={userNameInput} onChange={(e) => setUserNameInput(e.target.value)} />
-                                        <input className="w-full bg-black/40 border border-white/10 p-3 rounded-2xl text-xs text-center outline-none focus:border-purple-500" placeholder="PHONE NUMBER" value={userPhoneInput} onChange={(e) => setUserPhoneInput(e.target.value)} />
+                                        <input className="w-full bg-black/40 border border-white/10 p-3 rounded-2xl text-xs text-center outline-none" placeholder="ඔබේ නම" value={userNameInput} onChange={(e) => setUserNameInput(e.target.value)} />
+                                        <input className="w-full bg-black/40 border border-white/10 p-3 rounded-2xl text-xs text-center outline-none" placeholder="දුරකථන අංකය" value={userPhoneInput} onChange={(e) => setUserPhoneInput(e.target.value)} />
                                         <button onClick={handleRsvp} disabled={isVoting} className="w-full py-4 bg-white text-black rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-purple-500 hover:text-white transition-all flex items-center justify-center gap-2">
                                             {isVoting ? <Loader2 className="animate-spin" size={14} /> : <CheckCircle2 size={14} />} CONFIRM
                                         </button>
                                     </div>
                                 </div>
                             ) : (
-                                <div className="w-full bg-white/5 backdrop-blur-3xl rounded-[40px] p-10 border border-green-500/20 mb-6 flex flex-col items-center">
+                                <div className="w-full bg-white/5 backdrop-blur-3xl rounded-[40px] p-10 border border-green-500/20 mb-6 flex flex-col items-center animate-in zoom-in duration-300">
                                     <CheckCircle2 size={48} className="text-green-400 mb-4" />
                                     <p className="text-xs font-black uppercase tracking-widest text-green-400">OYAA CONFIRMED!</p>
                                 </div>
@@ -187,17 +151,14 @@
                                     ))}
                                 </div>
                             </div>
-
-                            <div className="mt-auto w-full pt-4 border-t border-white/5">
-                                <p className="text-[10px] font-bold text-white uppercase">{details.venue}</p>
-                                <p className="text-[8px] tracking-[0.4em] text-gray-600 uppercase mt-2 italic">LUMINARA 2022 O/L</p>
-                            </div>
+                            <div className="mt-auto w-full pt-4 border-t border-white/5 text-[9px] font-bold opacity-50 uppercase tracking-widest">LUMINARA 2022 O/L</div>
                         </div>
                     </div>
                 </div>
             );
         };
 
+        // මේ පේළි දෙක තමයි වෙබ් එකේ පෙන්වන්න අතිශය වැදගත් වෙන්නේ
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
